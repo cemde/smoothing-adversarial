@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "certify.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/code",
+            "args": [
+                "cifar10",
+                "/scratch/network/ssd2/cornelius/artifacts/CalibrationBound/models/salman/cifar10/PGD_10steps/eps_64/cifar10/resnet110/noise_0.12/checkpoint.pth.tar",
+                // "/scratch/network/ssd2/cornelius/artifacts/CalibrationBound/models/salman/cifar10/finetune_cifar_from_imagenetPGD2steps/PGD_10steps_30epochs_multinoise/8-multitrain/eps_64/cifar10/resnet110/noise_0.12/checkpoint.pth.tar",
+                "0.12",
+                "certification_output.txt",
+                "--batch",
+                "32768",
+                "--alpha",
+                "0.001",
+                "--N0",
+                "100",
+                "--N",
+                "10000",
+                "--gpu",
+                "7"
+            ]
+        }
+    ]
+}

@@ -8,7 +8,7 @@ from architectures import get_architecture
 from core import Smooth
 from datasets import get_dataset, DATASETS, get_num_classes
 import torch
-
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Certify many examples')
 parser.add_argument("dataset", choices=DATASETS, help="which dataset")
@@ -22,7 +22,10 @@ parser.add_argument("--split", choices=["train", "test"], default="test", help="
 parser.add_argument("--N0", type=int, default=100)
 parser.add_argument("--N", type=int, default=100000, help="number of samples to use")
 parser.add_argument("--alpha", type=float, default=0.001, help="failure probability")
+parser.add_argument("--gpu", type=int, default=0, help="gpu")
 args = parser.parse_args()
+
+os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
 if __name__ == "__main__":
     # load the base classifier
@@ -39,7 +42,10 @@ if __name__ == "__main__":
 
     # iterate through the dataset
     dataset = get_dataset(args.dataset, args.split)
-    for i in range(len(dataset)):
+    n_correct = 0
+    n_abstained = 0
+
+    for i in (tqdm_iter := tqdm(range(len(dataset)), desc="Certification")):
 
         # only certify every args.skip examples, and stop after args.max examples
         if i % args.skip != 0:
@@ -55,6 +61,11 @@ if __name__ == "__main__":
         prediction, radius = smoothed_classifier.certify(x, args.N0, args.N, args.alpha, args.batch)
         after_time = time()
         correct = int(prediction == label)
+        
+        n_abstained += int(prediction == smoothed_classifier.ABSTAIN)
+        n_correct += correct
+        
+        tqdm_iter.set_postfix(Accuracy=f"{n_correct/max(i-n_abstained+1, 1):.2%}", Abstained=f"{n_abstained/(i+1):.2%}")
 
         time_elapsed = str(datetime.timedelta(seconds=(after_time - before_time)))
         print("{}\t{}\t{}\t{:.3}\t{}\t{}".format(
